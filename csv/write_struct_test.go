@@ -35,7 +35,7 @@ type testStruct struct {
 	Float32 float32
 	Float64 float64
 	String  string
-	//Struct  s
+	// Struct  s
 	// Array []int
 	// Map   map[string]int
 	// Slice
@@ -48,8 +48,28 @@ type s struct {
 
 var tests = []struct {
 	Struct []testStruct
-	Expect string
+	CSV    string
 }{
+	{
+		[]testStruct{{
+			Bool:    false,
+			Int:     234,
+			Int8:    127,
+			Int16:   345,
+			Int32:   -234,
+			Int64:   123,
+			Uint:    123,
+			Uint8:   255,
+			Uint16:  23456,
+			Uint32:  34567,
+			Uint64:  102345,
+			Float32: 0.23456,
+			Float64: 0.00000023,
+			String:  "hello",
+			//Struct:  s{Int: 1, String: "日本語"},
+		}},
+		"false,234,127,345,-234,123,123,255,23456,34567,102345,0.23456,2.3e-07,hello\n",
+	},
 	{
 		[]testStruct{{
 			Bool:    true,
@@ -76,11 +96,14 @@ func TestWriteStruct(t *testing.T) {
 	for n, tt := range tests {
 		b := &bytes.Buffer{}
 		f := NewWriter(b)
-		f.WriteStructAll(tt.Struct)
-		// TODO:err
+		err := f.WriteStructAll(tt.Struct)
+		if err != nil {
+			t.Error(err)
+		}
+
 		out := b.String()
-		if out != tt.Expect {
-			t.Errorf("#%d: out:%q want %q", n, out, tt.Expect)
+		if out != tt.CSV {
+			t.Errorf("#%d: out:%q want %q", n, out, tt.CSV)
 		}
 	}
 }
@@ -89,9 +112,12 @@ func TestWriteStructHeader(t *testing.T) {
 	b := &bytes.Buffer{}
 	f := NewWriter(b)
 	s := testStruct{}
-	f.WriteStructHeader(s)
+	err := f.WriteStructHeader(s)
+	if err != nil {
+		t.Error(err)
+	}
 	f.Flush()
-	// TODO:err
+
 	out := b.String()
 	expect := "Bool,Int,Int8,Int16,Int32,Int64,Uint,Uint8,Uint16,Uint32,Uint64,Float32,Float64,String\n"
 	if out != expect {
