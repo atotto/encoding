@@ -1,3 +1,7 @@
+// Copyright 2011 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package csv
 
 import (
@@ -47,7 +51,7 @@ type s struct {
 }
 
 var tests = []struct {
-	Struct []testStruct
+	Struct interface{}
 	CSV    string
 }{
 	{
@@ -67,11 +71,7 @@ var tests = []struct {
 			Float64: 0,
 			String:  "",
 			//Struct:  s{Int: 1, String: "日本語"},
-		}},
-		"false,0,0,0,0,0,0,0,0,0,0,0,0,\"\"\n",
-	},
-	{
-		[]testStruct{{
+		}, {
 			Bool:    true,
 			Int:     234,
 			Int8:    127,
@@ -88,7 +88,8 @@ var tests = []struct {
 			String:  "hello",
 			//Struct:  s{Int: 1, String: "日本語"},
 		}},
-		"true,234,127,345,-234,123,123,255,23456,34567,102345,0.23456,2.3e-07,hello\n",
+		"false,0,0,0,0,0,0,0,0,0,0,0,0,\"\"\n" +
+			"true,234,127,345,-234,123,123,255,23456,34567,102345,0.23456,2.3e-07,hello\n",
 	},
 }
 
