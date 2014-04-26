@@ -5,3 +5,4 @@
 Documentation can be found at http://godoc.org/github.com/atotto/encoding
 
 
+coverage: http://gocover.io/github.com/atotto/encoding/csv
