@@ -6,6 +6,8 @@ package csv
 
 import (
 	"encoding/csv"
+	"fmt"
+	"time"
 
 	"io"
 	"reflect"
@@ -15,13 +17,19 @@ import (
 // A Reader reads records from a CSV-encoded file.
 type Reader struct {
 	*csv.Reader
+	timeFormat string
 }
 
 // NewReader returns a new Reader that reads from r.
 func NewReader(r io.Reader) *Reader {
 	return &Reader{
-		csv.NewReader(r),
+		Reader:     csv.NewReader(r),
+		timeFormat: "2006-01-02 15:04:05",
 	}
+}
+
+func (w *Reader) SetTimeFormat(format string) {
+	w.timeFormat = format
 }
 
 func (r *Reader) ReadStruct(v interface{}) (err error) {
@@ -37,7 +45,7 @@ func (r *Reader) ReadStruct(v interface{}) (err error) {
 		val := rv.Field(s)
 		x := record[s]
 
-		setValue(&val, x)
+		r.setValue(&val, x)
 	}
 
 	return
@@ -65,7 +73,7 @@ func (r *Reader) ReadStructAll(v interface{}) (err error) {
 	}
 }
 
-func setValue(v *reflect.Value, x string) (err error) {
+func (r *Reader) setValue(v *reflect.Value, x string) (err error) {
 	switch v.Kind() {
 	case reflect.Bool:
 		val, err := strconv.ParseBool(x)
@@ -97,6 +105,7 @@ func setValue(v *reflect.Value, x string) (err error) {
 	case reflect.String:
 		v.SetString(x)
 	case reflect.Struct:
+		return r.setStructValue(v, x)
 	case reflect.Map:
 	case reflect.Slice:
 	case reflect.Array:
@@ -105,4 +114,16 @@ func setValue(v *reflect.Value, x string) (err error) {
 		return &UnsupportedTypeError{v.Type()}
 	}
 	return
+}
+
+func (r *Reader) setStructValue(v *reflect.Value, x string) (err error) {
+	switch v.Type().String() {
+	case "time.Time":
+		t, err := time.Parse(r.timeFormat, x)
+		if err != nil {
+			return fmt.Errorf("time parse %s: %s", r.timeFormat, err)
+		}
+		v.Set(reflect.ValueOf(t))
+	}
+	return nil
 }

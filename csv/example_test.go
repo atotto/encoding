@@ -8,44 +8,48 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 func ExampleWriter() {
 
 	type Person struct {
-		Name   string
-		Age    int
-		Height float32
-		Weight float64
+		Name       string
+		Age        int
+		Height     float32
+		Weight     float64
+		CreateTime time.Time
 	}
 
 	member := []Person{
-		{"Gopher", 2, 12.3, 34.5},
-		{"Ghost", 4, 12.3, 0.000034},
+		{"Gopher", 2, 12.3, 34.5, time.Date(2020, 1, 1, 12, 20, 2, 0, time.UTC)},
+		{"Ghost", 4, 12.3, 0.000034, time.Date(2020, 2, 3, 15, 20, 2, 0, time.UTC)},
 	}
 
 	w := NewWriter(os.Stdout)
 	w.WriteStructAll(member)
 
 	// Output:
-	// Gopher,2,12.3,34.5
-	// Ghost,4,12.3,3.4e-05
+	// Gopher,2,12.3,34.5,2020-01-01 12:20:02
+	// Ghost,4,12.3,3.4e-05,2020-02-03 15:20:02
 }
 
 func ExampleReader() {
 
-	csvtext := "Gopher,2,12.3,34.5\nGhost,4,12.3,3.4e-05"
+	csvtext := "Gopher,2,12.3,34.5,2020/01/01 12:20:02\nGhost,4,12.3,3.4e-05,2020/02/03 15:20:02"
 
 	type Person struct {
-		Name   string
-		Age    int
-		Height float32
-		Weight float64
+		Name       string
+		Age        int
+		Height     float32
+		Weight     float64
+		CreateTime time.Time
 	}
 
 	var person = []Person{}
 
 	w := NewReader(strings.NewReader(csvtext))
+	w.SetTimeFormat("2006/01/02 15:04:05")
 	err := w.ReadStructAll(&person)
 	if err != nil {
 		return
@@ -54,5 +58,5 @@ func ExampleReader() {
 	fmt.Printf("%v", person)
 
 	// Output:
-	// [{Gopher 2 12.3 34.5} {Ghost 4 12.3 3.4e-05}]
+	// [{Gopher 2 12.3 34.5 2020-01-01 12:20:02 +0000 UTC} {Ghost 4 12.3 3.4e-05 2020-02-03 15:20:02 +0000 UTC}]
 }

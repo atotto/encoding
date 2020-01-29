@@ -6,6 +6,7 @@ package csv
 
 import (
 	"encoding/csv"
+	"time"
 
 	"fmt"
 	"io"
@@ -17,13 +18,19 @@ import (
 // see encoding/csv package.
 type Writer struct {
 	*csv.Writer
+	timeFormat string
 }
 
 // NewWriter returns a new Writer that writes to w.
 func NewWriter(w io.Writer) *Writer {
 	return &Writer{
-		csv.NewWriter(w),
+		Writer:     csv.NewWriter(w),
+		timeFormat: "2006-01-02 15:04:05",
 	}
+}
+
+func (w *Writer) SetTimeFormat(format string) {
+	w.timeFormat = format
 }
 
 // An UnsupportedTypeError is returned by Writer when attempting
@@ -49,7 +56,7 @@ func (w *Writer) WriteStruct(v interface{}) (err error) {
 	for s := 0; s < rv.NumField(); s++ {
 		val := rv.Field(s)
 
-		str, err := reflectValue(val)
+		str, err := w.reflectValue(val)
 		if err != nil {
 			return err
 		}
@@ -98,7 +105,7 @@ func (w *Writer) WriteStructHeader(v interface{}) (err error) {
 	return
 }
 
-func reflectValue(v reflect.Value) (str string, err error) {
+func (w *Writer) reflectValue(v reflect.Value) (str string, err error) {
 	str = ""
 	switch v.Kind() {
 	case reflect.Bool:
@@ -112,6 +119,7 @@ func reflectValue(v reflect.Value) (str string, err error) {
 	case reflect.String:
 		str = fmt.Sprintf("%v", v.Interface())
 	case reflect.Struct:
+		return w.structValue(v)
 	case reflect.Map:
 	case reflect.Slice:
 	case reflect.Array:
@@ -120,4 +128,12 @@ func reflectValue(v reflect.Value) (str string, err error) {
 		return "", &UnsupportedTypeError{v.Type()}
 	}
 	return
+}
+
+func (w *Writer) structValue(v reflect.Value) (str string, err error) {
+	switch v.Type().String() {
+	case "time.Time":
+		return time.Time.Format(v.Interface().(time.Time), w.timeFormat), nil
+	}
+	return "", nil
 }
