@@ -6,4 +6,6 @@ go:
  - 1.x
 
 script:
+ - test -z `gofmt -l ./ | tee /dev/stderr | head -n 1`
  - go test -v ./...
+ - go vet -v ./...
