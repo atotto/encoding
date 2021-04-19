@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package csv
+package csv_test
 
 import (
 	"fmt"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/atotto/encoding/csv"
 )
 
 func ExampleWriter() {
@@ -26,7 +28,7 @@ func ExampleWriter() {
 		{"Ghost", 4, 12.3, 0.000034, time.Date(2020, 2, 3, 15, 20, 2, 0, time.UTC)},
 	}
 
-	w := NewWriter(os.Stdout)
+	w := csv.NewWriter(os.Stdout)
 	w.SetTimeLocation(time.UTC)
 	w.WriteStructAll(member)
 
@@ -49,7 +51,7 @@ func ExampleReader() {
 
 	var person = []Person{}
 
-	r := NewReader(strings.NewReader(csvtext))
+	r := csv.NewReader(strings.NewReader(csvtext))
 	r.SetTimeFormat("2006/01/02 15:04:05")
 	r.SetTimeLocation(time.UTC)
 	err := r.ReadStructAll(&person)
