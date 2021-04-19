@@ -18,19 +18,25 @@ import (
 // see encoding/csv package.
 type Writer struct {
 	*csv.Writer
-	timeFormat string
+	timeFormat   string
+	timeLocation *time.Location
 }
 
 // NewWriter returns a new Writer that writes to w.
 func NewWriter(w io.Writer) *Writer {
 	return &Writer{
-		Writer:     csv.NewWriter(w),
-		timeFormat: "2006-01-02 15:04:05",
+		Writer:       csv.NewWriter(w),
+		timeFormat:   "2006-01-02 15:04:05",
+		timeLocation: time.Local,
 	}
 }
 
 func (w *Writer) SetTimeFormat(format string) {
 	w.timeFormat = format
+}
+
+func (w *Writer) SetTimeLocation(location *time.Location) {
+	w.timeLocation = location
 }
 
 // An UnsupportedTypeError is returned by Writer when attempting
@@ -133,7 +139,7 @@ func (w *Writer) reflectValue(v reflect.Value) (str string, err error) {
 func (w *Writer) structValue(v reflect.Value) (str string, err error) {
 	switch v.Type().String() {
 	case "time.Time":
-		return time.Time.Format(v.Interface().(time.Time), w.timeFormat), nil
+		return time.Time.Format(v.Interface().(time.Time).In(w.timeLocation), w.timeFormat), nil
 	}
 	return "", nil
 }

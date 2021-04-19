@@ -27,6 +27,7 @@ func ExampleWriter() {
 	}
 
 	w := NewWriter(os.Stdout)
+	w.SetTimeLocation(time.UTC)
 	w.WriteStructAll(member)
 
 	// Output:
@@ -48,9 +49,10 @@ func ExampleReader() {
 
 	var person = []Person{}
 
-	w := NewReader(strings.NewReader(csvtext))
-	w.SetTimeFormat("2006/01/02 15:04:05")
-	err := w.ReadStructAll(&person)
+	r := NewReader(strings.NewReader(csvtext))
+	r.SetTimeFormat("2006/01/02 15:04:05")
+	r.SetTimeLocation(time.UTC)
+	err := r.ReadStructAll(&person)
 	if err != nil {
 		return
 	}

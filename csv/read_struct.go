@@ -17,19 +17,25 @@ import (
 // A Reader reads records from a CSV-encoded file.
 type Reader struct {
 	*csv.Reader
-	timeFormat string
+	timeFormat   string
+	timeLocation *time.Location
 }
 
 // NewReader returns a new Reader that reads from r.
 func NewReader(r io.Reader) *Reader {
 	return &Reader{
-		Reader:     csv.NewReader(r),
-		timeFormat: "2006-01-02 15:04:05",
+		Reader:       csv.NewReader(r),
+		timeFormat:   "2006-01-02 15:04:05",
+		timeLocation: time.Local,
 	}
 }
 
-func (w *Reader) SetTimeFormat(format string) {
-	w.timeFormat = format
+func (r *Reader) SetTimeFormat(format string) {
+	r.timeFormat = format
+}
+
+func (r *Reader) SetTimeLocation(location *time.Location) {
+	r.timeLocation = location
 }
 
 func (r *Reader) ReadStruct(v interface{}) (err error) {
@@ -119,7 +125,7 @@ func (r *Reader) setValue(v *reflect.Value, x string) (err error) {
 func (r *Reader) setStructValue(v *reflect.Value, x string) (err error) {
 	switch v.Type().String() {
 	case "time.Time":
-		t, err := time.Parse(r.timeFormat, x)
+		t, err := time.ParseInLocation(r.timeFormat, x, r.timeLocation)
 		if err != nil {
 			return fmt.Errorf("time parse %s: %s", r.timeFormat, err)
 		}
